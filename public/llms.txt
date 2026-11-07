@@ -1,0 +1,145 @@
+# @matz/ui (v0.1.0-beta.1) — AI-First Design System, UI Library & Wails Native Bridge
+
+> Official LLM & AI Coding Agent Reference (`llms.txt`).
+> Primary Stack: HTML5 + Native CSS3 + Vanilla TypeScript (Zero Runtime Dependencies).
+> Official Adapters: Go + Wails v2/v3 (`@matz/ui/wails`), React 19 / Next.js 15, Vue 3, Svelte 5, Tailwind CSS, SCSS.
+
+## 1. Quick Installation & Setup
+
+```bash
+# CLI Initializer (Vanilla TS, Wails, React, Vue, Svelte)
+npx @matz/ui@beta init
+
+# Package Managers
+npm install @matz/ui@beta
+pnpm add @matz/ui@beta
+bun add @matz/ui@beta
+```
+
+```ts
+import '@matz/ui/styles.css';
+import { enableMatzSpotlight } from '@matz/ui';
+
+// Root HTML attributes control Dual-Theme, Product Palette, and Ergonomic Density:
+// <html lang="pt-BR" data-theme="dark" data-product="matz" data-density="default">
+enableMatzSpotlight();
+```
+
+## 2. Core Design Tokens (CSS Custom Properties)
+
+Always use semantic tokens instead of hardcoded colors so Dark (`Specular Obsidian`) and Light (`Architectural Alabaster`) themes work automatically with WCAG 2.1 AAA contrast:
+
+- `--surface-canvas`: Main app background (`#080a10` dark / `#f8fafc` light)
+- `--surface-card-solid`: Elevated card surface (`#0f131d` dark / `#ffffff` light)
+- `--surface-elevated`: Secondary interactive surface (`#141926` dark / `#f1f5f9` light)
+- `--surface-input`: Unified background for `<input>`, `<textarea>`, `<select>` (`#0a0d15` dark / `#ffffff` light)
+- `--text-primary`: Primary text (`#f8fafc` dark / `#0f172a` light)
+- `--text-secondary`: Muted/descriptive text (`#94a3b8` dark / `#475569` light)
+- `--accent`: Active brand accent (`#8b5cf6` default; changes with `data-product="matz|heapi|myterm|bycode|writtt"`)
+- `--border`: Specular 1px border token
+
+## 3. CSS Primitive Classes
+
+- Containers & Surfaces: `.matz-card`, `.matz-card.matz-beam-top` (1px top specular highlight)
+- Buttons: `.matz-btn`, `.matz-btn-primary`, `.matz-btn-sm`, `.matz-btn-lg`
+- Form Controls (Zero White-Leak): `.matz-input`, `.matz-textarea`, `.matz-select`, `.matz-switch`
+- Navigation & Grouping: `.matz-segmented`, `.matz-segmented-btn.active`, `.matz-collapsible-section`
+- Feedback & Badges: `.matz-badge`, `.matz-badge-cyan`, `.matz-badge-emerald`, `.matz-badge-amber`, `.matz-badge-rose`, `.matz-kbd`
+- Data Tables & Code: `.matz-table-wrap`, `.matz-table`, `.matz-code-block`, `.matz-tabular`
+
+## 4. Deterministic TypeScript Component APIs (`@matz/ui`)
+
+All interactive components mount into a standard `HTMLElement` with a single deterministic function call:
+
+```ts
+import {
+  matzIcon,
+  showMatzToast,
+  renderArcGauge,
+  renderSpeedometerGauge,
+  renderRingDonutChart,
+  renderInteractiveAreaChart,
+  renderStackedBarChart,
+  renderSparklineCard,
+  mountLiveTelemetryStream,
+  renderMatzDataTable,
+  renderMatzCombobox,
+  renderMatzOTPInput,
+  renderMatzAccordion,
+  renderMatzWaveformPlayer,
+  openMatzDialog,
+  openMatzSheetDrawer,
+  openRaycastCommandModal,
+  renderMatzNavigationRail,
+  renderMatzChipsSuite,
+  renderMatzStepperAndBreadcrumbs,
+  renderMatzProgressAndIndicators,
+  renderMatzAgenticUISuite,
+  MatzApiClientModule,
+  MatzEditorModule,
+} from '@matz/ui';
+
+// Vector Iconography (185+ icons across 10 categories with optical weight & variant control)
+const iconHtml = matzIcon('bot', 20, '', {
+  strokeWidth: 1.75, // 1.25 | 1.5 | 1.75 | 2 | 2.25
+  variant: 'duotone', // 'outline' | 'duotone' | 'filled'
+  ariaLabel: 'Assistente IA',
+});
+
+// Design System Navigation Rail, Chips, Stepper, Circular/Linear Progress & Agentic UI Suite
+renderMatzNavigationRail(document.getElementById('nav-rail')!);
+renderMatzChipsSuite(document.getElementById('chips')!);
+renderMatzStepperAndBreadcrumbs(document.getElementById('stepper')!);
+renderMatzProgressAndIndicators(document.getElementById('progress')!);
+renderMatzAgenticUISuite(document.getElementById('agentic-ui')!);
+
+// Radial 270° Arc Gauge (60fps in-place SVG updates, supports interactive slider)
+const gauge = renderArcGauge(document.getElementById('gauge')!, {
+  label: 'CPU Load',
+  value: 74,
+  max: 100,
+  unit: '%',
+  interactive: true,
+});
+gauge.setValue(82);
+
+// Searchable Combobox
+renderMatzCombobox(
+  document.getElementById('combo')!,
+  [
+    { value: 'wails', label: 'Go 1.27 + Wails v3', badge: 'Native' },
+    { value: 'vanilla', label: 'Vanilla TypeScript', badge: 'Default' },
+  ],
+  'vanilla',
+  (selected) => showMatzToast(`Selected: ${selected}`)
+);
+
+// 6-Digit 2FA / TOTP Input
+renderMatzOTPInput(document.getElementById('otp')!, 6, (code) => {
+  showMatzToast(`Verified code: ${code}`);
+});
+```
+
+## 5. Native Go + Wails Encapsulation Layer (`@matz/ui/wails`)
+
+Use `createMatzWailsBridge` to encapsulate Wails v2/v3 desktop APIs with automatic browser fallback:
+
+```ts
+import { createMatzWailsBridge } from '@matz/ui/wails';
+
+const wails = createMatzWailsBridge({
+  windowControls: true,
+  eventsIPC: true,
+  serviceBinder: true,
+  nativeDialogs: true,
+});
+
+await wails.window.setTitle('My App');
+const res = await wails.call< { status: string } >('App.HealthCheck');
+```
+
+## 6. AI Generation Rules (Best Practices)
+
+1. Default to **Vanilla TypeScript + Native CSS3** unless the user explicitly asks for React, Vue, or Svelte.
+2. Always associate `<label for="id">` with form inputs (`id="id"`) and include `aria-label` on icon-only buttons.
+3. Add `.matz-tabular` (`font-variant-numeric: tabular-nums`) to any element displaying real-time numbers, percentages, or metrics to guarantee `CLS = 0`.
