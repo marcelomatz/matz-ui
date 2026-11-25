@@ -202,10 +202,20 @@
 
 [data-product="writtt"] {
   --accent: #f59e0b;
-  --accent-hover: #d97706;
+  --accent-hover: #fbbf24;
+  --accent-fg: #09090b;
   --accent-secondary: #ec4899;
   --accent-muted: rgba(245, 158, 11, 0.14);
-  --accent-glow: rgba(245, 158, 11, 0.38);
+  --accent-glow: rgba(245, 158, 11, 0.36);
+}
+
+[data-theme="light"][data-product="writtt"],
+[data-product="writtt"][data-theme="light"] {
+  --accent: #d97706;
+  --accent-hover: #b45309;
+  --accent-fg: #ffffff;
+  --accent-muted: rgba(217, 119, 6, 0.12);
+  --accent-glow: rgba(217, 119, 6, 0.24);
 }
 
 *,
@@ -3689,4 +3699,421 @@ textarea:focus-visible,
 .matz-floating-window:hover .matz-float-handle.is-se::after {
   opacity: 0.95;
   border-color: var(--accent);
+}
+
+
+/* ============================================================================
+ * 18. Standardized Product Portal, Header, Footer, Window Chrome & Downloads
+ * Shared across Vanilla TS websites and React / Next.js applications
+ * ============================================================================ */
+
+.matz-portal-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.matz-portal-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.matz-portal-header {
+  position: sticky;
+  top: 0;
+  z-index: 80;
+  background: color-mix(in srgb, var(--bg-primary) 90%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+}
+
+.matz-portal-header-inner {
+  max-width: 1200px;
+  height: 60px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  overflow: visible;
+}
+
+.matz-portal-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--text-primary);
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+}
+
+.matz-portal-brand-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--accent-muted);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 18px -6px var(--accent-glow);
+  flex-shrink: 0;
+}
+
+.matz-portal-version-pill {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-card-solid);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.matz-portal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  overflow: visible;
+}
+
+.matz-portal-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border-radius: 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  transition: color 130ms ease, background 130ms ease, border-color 130ms ease;
+}
+
+.matz-portal-nav-link:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.matz-portal-nav-link.is-active {
+  color: var(--accent);
+  background: var(--accent-muted);
+  border-color: color-mix(in srgb, var(--accent) 36%, transparent);
+}
+
+.matz-portal-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.matz-portal-locale-group {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  overflow: hidden;
+  background: var(--surface-card-solid);
+}
+
+.matz-portal-locale-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 5px 7px;
+  cursor: pointer;
+  line-height: 1;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.matz-portal-locale-btn:hover {
+  color: var(--text-primary);
+}
+
+.matz-portal-locale-btn.is-active {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+
+.matz-portal-icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--surface-card-solid);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+
+.matz-portal-icon-btn:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.matz-portal-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-fg);
+  font-size: 12.5px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 130ms ease, transform 100ms ease;
+}
+
+.matz-portal-cta:hover {
+  background: var(--accent-hover);
+}
+
+.matz-portal-ghost-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 11px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--surface-card-solid);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+
+.matz-portal-ghost-btn:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.matz-portal-mobile-toggle {
+  display: none;
+}
+
+.matz-portal-mobile-drawer {
+  display: none;
+  border-top: 1px solid var(--border);
+  background: var(--bg-secondary);
+  padding: 12px 24px 16px;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.matz-portal-mobile-drawer.is-open {
+  display: flex;
+}
+
+@media (max-width: 1020px) {
+  .matz-portal-nav,
+  .matz-portal-hide-tablet {
+    display: none;
+  }
+  .matz-portal-mobile-toggle {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 600px) {
+  .matz-portal-header-inner {
+    padding: 0 14px;
+    gap: 8px;
+  }
+  .matz-portal-cta span {
+    display: none;
+  }
+  .matz-portal-cta {
+    padding: 0 10px;
+  }
+}
+
+.matz-portal-footer {
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  background: var(--bg-secondary);
+  padding: 36px 0;
+}
+
+.matz-portal-footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.matz-portal-footer-brand p {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  max-width: 520px;
+  line-height: 1.55;
+}
+
+.matz-portal-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+}
+
+.matz-portal-footer-links a {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 120ms ease;
+}
+
+.matz-portal-footer-links a:hover {
+  color: var(--accent);
+}
+
+/* Authentic Native Desktop Window Frame for Screenshots & Previews */
+.matz-window-frame {
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  border-top-color: var(--border-specular-top);
+  background: var(--bg-void);
+  box-shadow: var(--shadow-elevated);
+  overflow: hidden;
+}
+
+.matz-window-titlebar {
+  height: 36px;
+  padding: 0 12px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 11.5px;
+}
+
+.matz-window-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--text-primary);
+  min-width: 0;
+}
+
+.matz-window-subtitle {
+  color: var(--text-muted);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.matz-window-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.matz-window-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-tertiary);
+}
+
+/* Standardized Download Cards (Installer + Portable) */
+.matz-dl-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 920px) {
+  .matz-dl-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.matz-dl-card {
+  position: relative;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-top-color: var(--border-specular-top);
+  background: var(--surface-card);
+  background-color: var(--surface-card-solid);
+  box-shadow: var(--shadow-specular);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.matz-dl-card.is-recommended {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-specular), 0 0 32px -12px var(--accent-glow);
+}
+
+.matz-dl-alt-row {
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+.matz-dl-alt-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.matz-dl-alt-link:hover {
+  text-decoration: underline;
 }
