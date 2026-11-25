@@ -92,7 +92,7 @@ export function createMatzWailsBridge(
         runtimeGeneration: hasWailsV3 ? 'wails-v3' : hasWailsV2 ? 'wails-v2' : 'web-sandbox',
         osPlatform,
         webviewEngine: hasWailsV3 || hasWailsV2 ? 'Native OS WebView' : 'Browser Sandbox Fallback',
-      };
+      }
     },
 
     window: {

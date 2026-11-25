@@ -1,6 +1,8 @@
 export * from "./primitives/TitleBar";
+export * from "./primitives/FloatingWindow";
 export * from "./modules/TerminalModule";
 export * from "./modules/EditorModule";
+export * from "./modules/CodeEditorModule";
 export * from "./modules/ApiClientModule";
 export * from "./web/WebShell";
 export * from "./icons/Icons";
@@ -11,3 +13,7 @@ export * from "./components/WebsiteAndLayoutComponents";
 export * from "./components/CatalogExpansionComponents";
 export * from "./wails/WailsBridge";
 export * from "./version/VersionSystem";
+export * from "./algorithms/index";
+export * from "./diff/DiffEngine";
+export * from "./i18n/index";
+export * from "./theme/ThemeEngine";

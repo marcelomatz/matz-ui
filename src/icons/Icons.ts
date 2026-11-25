@@ -456,8 +456,24 @@ const ICON_PATH_MAP: Record<string, string> = Object.fromEntries(
   MATZ_ICON_CATALOG.map((item) => [item.name, item.path])
 );
 
+const ICON_ALIAS_MAP: Record<string, MatzIconName> = {
+  x: 'close',
+  'layout-grid': 'grid',
+  'refresh-cw': 'refresh',
+  'rotate-ccw': 'undo',
+  'upload-cloud': 'cloud-upload',
+  'download-cloud': 'cloud-download',
+  'alert-circle': 'alert',
+  'bar-chart-2': 'chart',
+  'bar-chart': 'chart',
+  zap: 'bolt',
+  award: 'certificate',
+  square: 'stop',
+  'external-link': 'external',
+};
+
 export function matzIcon(
-  name: MatzIconName,
+  name: MatzIconName | string,
   size = 15,
   className = '',
   options?: MatzIconOptions
@@ -471,7 +487,8 @@ export function matzIcon(
     ? `role="img" aria-label="${options.ariaLabel}"`
     : `aria-hidden="true"`;
 
-  const path = ICON_PATH_MAP[name] || ICON_PATH_MAP.sparkles;
+  const resolvedName = ICON_PATH_MAP[name] ? name : ICON_ALIAS_MAP[name] || name;
+  const path = ICON_PATH_MAP[resolvedName] || ICON_PATH_MAP.sparkles;
 
   const fillAttr =
     variant === 'duotone'
@@ -558,4 +575,655 @@ const html = matzIcon('${name}', ${size}, '', {
   strokeWidth: ${strokeWidth},
   variant: '${variant}',
 });`;
+}
+
+export interface MatzLanguageMeta {
+  id: string;
+  label: string;
+  badge: string;
+  color: string;
+  icon: MatzIconName;
+}
+
+export function getMatzLanguageMeta(filePathOrName: string): MatzLanguageMeta {
+  const clean = (filePathOrName || '').replace(/\\/g, '/');
+  const base = (clean.split('/').pop() || clean).toLowerCase();
+  const ext = base.includes('.') ? base.split('.').pop() || '' : '';
+
+  // 1. Special Manifests & Project Files
+  if (base === 'fxmanifest.lua' || base === '__resource.lua') {
+    return {
+      id: 'lua',
+      label: 'Lua Manifest (FX)',
+      badge: 'FXM',
+      color: '#F97316',
+      icon: 'package',
+    };
+  }
+  if (base === 'go.mod' || base === 'go.sum' || base === 'go.work') {
+    return {
+      id: 'go',
+      label: 'Go Module',
+      badge: 'MOD',
+      color: '#00ADD8',
+      icon: 'package',
+    };
+  }
+  if (base === 'package.json' || base === 'package-lock.json' || base === 'pnpm-lock.yaml' || base === 'bun.lockb') {
+    return {
+      id: 'json',
+      label: 'NPM Package',
+      badge: 'NPM',
+      color: '#EF4444',
+      icon: 'package',
+    };
+  }
+  if (base.startsWith('tsconfig') && base.endsWith('.json')) {
+    return {
+      id: 'json',
+      label: 'TypeScript Config',
+      badge: 'TSC',
+      color: '#3178C6',
+      icon: 'sliders-code',
+    };
+  }
+  if (base.startsWith('eslint.config') || base.startsWith('.eslintrc') || base.startsWith('.prettierrc')) {
+    return {
+      id: ext === 'json' ? 'json' : 'javascript',
+      label: 'Linter Config',
+      badge: 'LINT',
+      color: '#8B5CF6',
+      icon: 'shield-check',
+    };
+  }
+  if (base.startsWith('vite.config') || base.startsWith('vitest.config')) {
+    return {
+      id: 'typescript',
+      label: base.startsWith('vitest') ? 'Vitest Config' : 'Vite Config',
+      badge: base.startsWith('vitest') ? 'TEST' : 'VITE',
+      color: '#A855F7',
+      icon: 'bolt',
+    };
+  }
+  if (base === 'wails.json') {
+    return {
+      id: 'json',
+      label: 'Wails Project',
+      badge: 'WAIL',
+      color: '#F43F5E',
+      icon: 'app-window',
+    };
+  }
+  if (base === 'dockerfile' || base.startsWith('dockerfile.') || base === 'containerfile' || base.startsWith('docker-compose')) {
+    return {
+      id: 'dockerfile',
+      label: 'Docker Container',
+      badge: 'DCK',
+      color: '#0EA5E9',
+      icon: 'box',
+    };
+  }
+  if (base === 'makefile' || base === 'cmakelists.txt' || ext === 'mk' || ext === 'cmake') {
+    return {
+      id: 'makefile',
+      label: 'Makefile / Build',
+      badge: 'MAKE',
+      color: '#F59E0B',
+      icon: 'wrench',
+    };
+  }
+  if (base === 'cargo.toml' || base === 'cargo.lock') {
+    return {
+      id: 'toml',
+      label: 'Cargo Rust Crate',
+      badge: 'CRG',
+      color: '#F97316',
+      icon: 'package',
+    };
+  }
+  if (base === 'requirements.txt' || base === 'pyproject.toml' || base === 'pipfile') {
+    return {
+      id: ext === 'toml' ? 'toml' : 'config',
+      label: 'Python Package',
+      badge: 'PIP',
+      color: '#38BDF8',
+      icon: 'package',
+    };
+  }
+  if (base.startsWith('.git') || base === '.editorconfig' || base === '.dockerignore' || base === '.npmignore') {
+    return {
+      id: 'config',
+      label: 'Git / Ignore Config',
+      badge: 'GIT',
+      color: '#F97316',
+      icon: 'git-branch',
+    };
+  }
+  if (base === '.env' || base.startsWith('.env.')) {
+    return {
+      id: 'ini',
+      label: 'Environment Variables',
+      badge: 'ENV',
+      color: '#EAB308',
+      icon: 'key',
+    };
+  }
+  if (base === 'license' || base.startsWith('license.')) {
+    return {
+      id: 'plaintext',
+      label: 'Software License',
+      badge: 'LIC',
+      color: '#A855F7',
+      icon: 'certificate',
+    };
+  }
+
+  // 2. Programming Languages (50+ Extensions)
+  if (ext === 'go') {
+    const isTest = base.endsWith('_test.go');
+    return {
+      id: 'go',
+      label: isTest ? 'Go Test' : 'Go',
+      badge: isTest ? 'GO·T' : 'GO',
+      color: isTest ? '#22D3EE' : '#00ADD8',
+      icon: isTest ? 'check-circle' : 'cpu',
+    };
+  }
+  if (ext === 'lua') {
+    const isTest = base.includes('test') || base.includes('spec');
+    return {
+      id: 'lua',
+      label: isTest ? 'Lua Test' : 'Lua',
+      badge: 'LUA',
+      color: '#3B82F6',
+      icon: 'orbit',
+    };
+  }
+  if (ext === 'ts' || ext === 'tsx' || ext === 'mts' || ext === 'cts') {
+    const isTest = base.endsWith('.test.ts') || base.endsWith('.spec.ts') || base.endsWith('.test.tsx');
+    return {
+      id: 'typescript',
+      label: ext === 'tsx' ? 'TypeScript JSX' : isTest ? 'TS Test' : 'TypeScript',
+      badge: ext === 'tsx' ? 'TSX' : isTest ? 'TS·T' : 'TS',
+      color: ext === 'tsx' ? '#38BDF8' : '#3178C6',
+      icon: isTest ? 'check-circle' : 'braces',
+    };
+  }
+  if (ext === 'js' || ext === 'jsx' || ext === 'mjs' || ext === 'cjs') {
+    const isTest = base.endsWith('.test.js') || base.endsWith('.spec.js');
+    return {
+      id: 'javascript',
+      label: ext === 'jsx' ? 'JavaScript JSX' : 'JavaScript',
+      badge: ext === 'jsx' ? 'JSX' : isTest ? 'JS·T' : 'JS',
+      color: '#F59E0B',
+      icon: 'braces',
+    };
+  }
+  if (ext === 'py' || ext === 'pyw' || ext === 'pyi' || ext === 'ipynb') {
+    return {
+      id: 'python',
+      label: 'Python',
+      badge: 'PY',
+      color: '#38BDF8',
+      icon: 'terminal',
+    };
+  }
+  if (ext === 'rs') {
+    return {
+      id: 'rust',
+      label: 'Rust',
+      badge: 'RS',
+      color: '#FB7185',
+      icon: 'shield',
+    };
+  }
+  if (ext === 'c' || ext === 'h') {
+    return {
+      id: 'c',
+      label: ext === 'h' ? 'C/C++ Header' : 'C',
+      badge: ext === 'h' ? 'H' : 'C',
+      color: '#60A5FA',
+      icon: 'binary',
+    };
+  }
+  if (ext === 'cpp' || ext === 'cc' || ext === 'cxx' || ext === 'hpp' || ext === 'hh' || ext === 'hxx') {
+    return {
+      id: 'cpp',
+      label: 'C++',
+      badge: 'C++',
+      color: '#3B82F6',
+      icon: 'binary',
+    };
+  }
+  if (ext === 'cs' || ext === 'csx') {
+    return {
+      id: 'csharp',
+      label: 'C# (.NET)',
+      badge: 'C#',
+      color: '#A855F7',
+      icon: 'box',
+    };
+  }
+  if (ext === 'java' || ext === 'jar' || ext === 'gradle') {
+    return {
+      id: 'java',
+      label: 'Java',
+      badge: 'JAV',
+      color: '#EF4444',
+      icon: 'cpu',
+    };
+  }
+  if (ext === 'kt' || ext === 'kts') {
+    return {
+      id: 'kotlin',
+      label: 'Kotlin',
+      badge: 'KT',
+      color: '#A855F7',
+      icon: 'code',
+    };
+  }
+  if (ext === 'swift') {
+    return {
+      id: 'swift',
+      label: 'Swift',
+      badge: 'SWF',
+      color: '#F97316',
+      icon: 'bolt',
+    };
+  }
+  if (ext === 'php') {
+    return {
+      id: 'php',
+      label: 'PHP',
+      badge: 'PHP',
+      color: '#818CF8',
+      icon: 'globe',
+    };
+  }
+  if (ext === 'rb' || ext === 'erb' || base === 'gemfile') {
+    return {
+      id: 'ruby',
+      label: 'Ruby',
+      badge: 'RB',
+      color: '#F43F5E',
+      icon: 'sparkles',
+    };
+  }
+  if (ext === 'dart') {
+    return {
+      id: 'dart',
+      label: 'Dart / Flutter',
+      badge: 'DRT',
+      color: '#06B6D4',
+      icon: 'smartphone',
+    };
+  }
+  if (ext === 'ex' || ext === 'exs') {
+    return {
+      id: 'elixir',
+      label: 'Elixir',
+      badge: 'EX',
+      color: '#C084FC',
+      icon: 'atom',
+    };
+  }
+  if (ext === 'zig') {
+    return {
+      id: 'zig',
+      label: 'Zig',
+      badge: 'ZIG',
+      color: '#F59E0B',
+      icon: 'bolt',
+    };
+  }
+  if (ext === 'hs' || ext === 'lhs') {
+    return {
+      id: 'haskell',
+      label: 'Haskell',
+      badge: 'HS',
+      color: '#8B5CF6',
+      icon: 'workflow',
+    };
+  }
+  if (ext === 'scala' || ext === 'sc') {
+    return {
+      id: 'scala',
+      label: 'Scala',
+      badge: 'SCL',
+      color: '#EF4444',
+      icon: 'layers',
+    };
+  }
+  if (ext === 'r' || ext === 'rmd') {
+    return {
+      id: 'r',
+      label: 'R Statistical',
+      badge: 'R',
+      color: '#3B82F6',
+      icon: 'chart-line',
+    };
+  }
+  if (ext === 'pl' || ext === 'pm') {
+    return {
+      id: 'perl',
+      label: 'Perl',
+      badge: 'PL',
+      color: '#0284C7',
+      icon: 'terminal',
+    };
+  }
+  if (ext === 'sol') {
+    return {
+      id: 'solidity',
+      label: 'Solidity',
+      badge: 'SOL',
+      color: '#6366F1',
+      icon: 'shield-check',
+    };
+  }
+
+  // 3. Web, UI, Styles & Templates
+  if (ext === 'html' || ext === 'htm') {
+    return {
+      id: 'html',
+      label: 'HTML',
+      badge: 'HTML',
+      color: '#F97316',
+      icon: 'brackets',
+    };
+  }
+  if (ext === 'vue') {
+    return {
+      id: 'vue',
+      label: 'Vue SFC',
+      badge: 'VUE',
+      color: '#10B981',
+      icon: 'layers',
+    };
+  }
+  if (ext === 'svelte') {
+    return {
+      id: 'svelte',
+      label: 'Svelte',
+      badge: 'SVL',
+      color: '#FF3E00',
+      icon: 'layers',
+    };
+  }
+  if (ext === 'astro') {
+    return {
+      id: 'astro',
+      label: 'Astro',
+      badge: 'AST',
+      color: '#F97316',
+      icon: 'sparkles',
+    };
+  }
+  if (ext === 'css' || ext === 'scss' || ext === 'sass' || ext === 'less') {
+    return {
+      id: 'css',
+      label: ext.toUpperCase(),
+      badge: ext === 'css' ? 'CSS' : 'SCSS',
+      color: ext === 'css' ? '#38BDF8' : '#EC4899',
+      icon: 'palette',
+    };
+  }
+
+  // 4. Data, Schemas, Query & Config Formats
+  if (ext === 'sql' || ext === 'db' || ext === 'sqlite' || ext === 'pgsql') {
+    return {
+      id: 'sql',
+      label: 'SQL',
+      badge: 'SQL',
+      color: '#38BDF8',
+      icon: 'database',
+    };
+  }
+  if (ext === 'graphql' || ext === 'gql') {
+    return {
+      id: 'graphql',
+      label: 'GraphQL',
+      badge: 'GQL',
+      color: '#EC4899',
+      icon: 'vector',
+    };
+  }
+  if (ext === 'proto') {
+    return {
+      id: 'protobuf',
+      label: 'Protocol Buffers',
+      badge: 'PB',
+      color: '#10B981',
+      icon: 'api',
+    };
+  }
+  if (ext === 'prisma') {
+    return {
+      id: 'prisma',
+      label: 'Prisma Schema',
+      badge: 'PRS',
+      color: '#14B8A6',
+      icon: 'database',
+    };
+  }
+  if (ext === 'json' || ext === 'jsonc' || ext === 'json5') {
+    return {
+      id: 'json',
+      label: 'JSON',
+      badge: 'JSON',
+      color: '#10B981',
+      icon: 'braces',
+    };
+  }
+  if (ext === 'yaml' || ext === 'yml') {
+    return {
+      id: 'yaml',
+      label: 'YAML',
+      badge: 'YML',
+      color: '#EC4899',
+      icon: 'sliders',
+    };
+  }
+  if (ext === 'toml') {
+    return {
+      id: 'toml',
+      label: 'TOML',
+      badge: 'TML',
+      color: '#F59E0B',
+      icon: 'sliders-code',
+    };
+  }
+  if (ext === 'xml' || ext === 'plist' || ext === 'csproj' || ext === 'sln') {
+    return {
+      id: 'xml',
+      label: 'XML',
+      badge: 'XML',
+      color: '#F59E0B',
+      icon: 'brackets',
+    };
+  }
+  if (ext === 'ini' || ext === 'cfg' || ext === 'conf' || ext === 'properties') {
+    return {
+      id: 'ini',
+      label: 'Configuration',
+      badge: 'CFG',
+      color: '#94A3B8',
+      icon: 'settings',
+    };
+  }
+  if (ext === 'tf' || ext === 'tfvars' || ext === 'hcl') {
+    return {
+      id: 'terraform',
+      label: 'Terraform / HCL',
+      badge: 'TF',
+      color: '#8B5CF6',
+      icon: 'cloud',
+    };
+  }
+  if (ext === 'csv' || ext === 'tsv' || ext === 'parquet') {
+    return {
+      id: 'csv',
+      label: 'Tabular Data',
+      badge: 'CSV',
+      color: '#10B981',
+      icon: 'table',
+    };
+  }
+
+  // 5. Documentation, Shells & Assets
+  if (ext === 'md' || ext === 'mdx' || ext === 'markdown') {
+    return {
+      id: 'markdown',
+      label: 'Markdown',
+      badge: 'MD',
+      color: '#8B5CF6',
+      icon: 'file-text',
+    };
+  }
+  if (ext === 'sh' || ext === 'bash' || ext === 'zsh' || ext === 'fish') {
+    return {
+      id: 'shell',
+      label: 'Shell Script',
+      badge: 'SH',
+      color: '#22C55E',
+      icon: 'terminal',
+    };
+  }
+  if (ext === 'ps1' || ext === 'psm1' || ext === 'psd1') {
+    return {
+      id: 'powershell',
+      label: 'PowerShell',
+      badge: 'PS1',
+      color: '#38BDF8',
+      icon: 'terminal',
+    };
+  }
+  if (ext === 'bat' || ext === 'cmd') {
+    return {
+      id: 'batch',
+      label: 'Batch Script',
+      badge: 'BAT',
+      color: '#94A3B8',
+      icon: 'terminal',
+    };
+  }
+  if (ext === 'lock') {
+    return {
+      id: 'lock',
+      label: 'Lockfile',
+      badge: 'LCK',
+      color: '#64748B',
+      icon: 'lock',
+    };
+  }
+  if (ext === 'log') {
+    return {
+      id: 'log',
+      label: 'Log Output',
+      badge: 'LOG',
+      color: '#94A3B8',
+      icon: 'activity',
+    };
+  }
+  if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico', 'avif'].includes(ext)) {
+    return {
+      id: 'media',
+      label: ext === 'svg' ? 'SVG Vector' : 'Image Asset',
+      badge: ext === 'svg' ? 'SVG' : 'IMG',
+      color: '#D946EF',
+      icon: 'image',
+    };
+  }
+  if (['mp3', 'wav', 'ogg', 'mp4', 'webm'].includes(ext)) {
+    return {
+      id: 'media',
+      label: 'Media Asset',
+      badge: 'MED',
+      color: '#EC4899',
+      icon: 'waveform',
+    };
+  }
+
+  return {
+    id: 'plaintext',
+    label: 'Plain Text',
+    badge: 'TXT',
+    color: '#94A3B8',
+    icon: 'file-text',
+  };
+}
+
+export function matzFileIcon(
+  filePathOrName: string,
+  size = 13,
+  isDir = false,
+  expanded = false
+): string {
+  if (isDir) {
+    const base = (filePathOrName || '').replace(/\\/g, '/').split('/').pop()?.toLowerCase() || '';
+    let dirColor = '#3b82f6';
+    let subIcon: MatzIconName | null = null;
+
+    if (base === 'domain' || base === 'entities' || base === 'models' || base === 'core') {
+      dirColor = '#8b5cf6';
+      subIcon = 'atom';
+    } else if (base === 'use_cases' || base === 'application' || base === 'services' || base === 'shared') {
+      dirColor = '#10b981';
+      subIcon = 'workflow';
+    } else if (base === 'adapters' || base === 'infrastructure' || base === 'delivery' || base === 'handlers' || base === 'api') {
+      dirColor = '#f59e0b';
+      subIcon = 'api';
+    } else if (base === 'client' || base === 'frontend' || base === 'ui' || base === 'html' || base === 'web' || base === 'components' || base === 'views' || base === 'pages') {
+      dirColor = '#06b6d4';
+      subIcon = 'monitor';
+    } else if (base === 'server' || base === 'backend' || base === 'cmd' || base === 'internal' || base === 'pkg') {
+      dirColor = '#6366f1';
+      subIcon = 'server';
+    } else if (base === 'sql' || base === 'database' || base === 'migrations' || base === 'db' || base === 'store' || base === 'persistence') {
+      dirColor = '#ec4899';
+      subIcon = 'database';
+    } else if (base === 'test' || base === 'tests' || base === '__tests__' || base === 'spec' || base === 'e2e') {
+      dirColor = '#22c55e';
+      subIcon = 'check-circle';
+    } else if (base === 'locales' || base === 'i18n' || base === 'lang' || base === 'translations') {
+      dirColor = '#38bdf8';
+      subIcon = 'globe';
+    } else if (base === 'config' || base === 'configs' || base === 'settings' || base === 'env') {
+      dirColor = '#eab308';
+      subIcon = 'sliders';
+    } else if (base === 'scripts' || base === 'bin' || base === 'tools' || base === 'hooks') {
+      dirColor = '#14b8a6';
+      subIcon = 'terminal';
+    } else if (base === 'assets' || base === 'public' || base === 'static' || base === 'media' || base === 'images' || base === 'icons' || base === 'styles') {
+      dirColor = '#d946ef';
+      subIcon = 'palette';
+    } else if (base === 'docs' || base === 'documentation') {
+      dirColor = '#60a5fa';
+      subIcon = 'file-text';
+    } else if (base === 'security' || base === 'crypto' || base === 'auth' || base === 'vault') {
+      dirColor = '#f43f5e';
+      subIcon = 'shield';
+    } else if (base.startsWith('coe_') || base.startsWith('matz-')) {
+      dirColor = '#818cf8';
+      subIcon = 'package';
+    } else if (base.startsWith('.')) {
+      dirColor = '#64748b';
+      subIcon = 'wrench';
+    }
+
+    return `<span style="display:inline-flex;align-items:center;gap:3px;color:${dirColor};flex-shrink:0;">${matzIcon(
+      expanded ? 'chevron-down' : 'chevron-right',
+      Math.max(10, size - 2)
+    )}${matzIcon(expanded ? 'folder-open' : 'folder', size, '', {
+      variant: expanded ? 'duotone' : 'outline',
+      color: dirColor,
+    })}${
+      subIcon
+        ? `<span style="display:inline-flex;opacity:0.85;margin-left:-1px;">${matzIcon(subIcon, Math.max(9, size - 3), '', { color: dirColor })}</span>`
+        : ''
+    }</span>`;
+  }
+
+  const meta = getMatzLanguageMeta(filePathOrName);
+  return `<span class="matz-file-lang-badge" title="${meta.label}" style="display:inline-flex;align-items:center;justify-content:center;gap:2px;min-width:24px;height:15px;padding:0 3.5px;border-radius:3px;font-family:var(--font-mono);font-size:8.5px;font-weight:800;letter-spacing:-0.02em;color:${meta.color};background:color-mix(in srgb, ${meta.color} 14%, transparent);border:1px solid color-mix(in srgb, ${meta.color} 35%, transparent);flex-shrink:0;">${matzIcon(meta.icon, 9, '', { color: meta.color })}<span>${meta.badge}</span></span>`;
 }

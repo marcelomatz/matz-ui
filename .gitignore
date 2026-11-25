@@ -2,3 +2,12 @@ node_modules/
 dist/
 *.log
 .DS_Store
+
+# Local developer / agent environment (never commit)
+.local-dev/
+.agents/
+AGENTS.md
+GEMINI.md
+CLAUDE.md
+skills-lock.json
+*.ps1

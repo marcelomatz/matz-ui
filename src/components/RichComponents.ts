@@ -44,14 +44,20 @@ export const DEFAULT_RAYCAST_COMMANDS: RaycastCommandItem[] = [
 
 export function renderEmbeddedRaycastPalette(
   container: HTMLElement,
-  commands: RaycastCommandItem[] = DEFAULT_RAYCAST_COMMANDS
+  commands: RaycastCommandItem[] = DEFAULT_RAYCAST_COMMANDS,
+  onCloseModal?: () => void
 ): void {
   let query = '';
   let activeIdx = 0;
 
   const draw = () => {
-    const filtered = commands.filter((c) =>
-      c.label.toLowerCase().includes(query.toLowerCase())
+    const q = query.trim().toLowerCase();
+    const filtered = commands.filter(
+      (c) =>
+        !q ||
+        c.label.toLowerCase().includes(q) ||
+        (c.category && c.category.toLowerCase().includes(q)) ||
+        (c.shortcut && c.shortcut.toLowerCase().includes(q))
     );
     if (activeIdx >= filtered.length) activeIdx = 0;
 
@@ -59,8 +65,8 @@ export function renderEmbeddedRaycastPalette(
       <div class="matz-raycast-box matz-beam-bottom" style="width:100%;">
         <div class="matz-raycast-input-wrap">
           <span style="color:var(--text-muted);">${matzIcon('search', 16)}</span>
-          <input class="matz-raycast-input" id="rc-inline-input" placeholder="Procurar comandos ou componentes..." value="${query.replace(/"/g, '&quot;')}" autocomplete="off" />
-          <span class="matz-kbd">ESC</span>
+          <input class="matz-raycast-input" id="rc-inline-input" placeholder="Procurar comandos, categorias ou atalhos..." value="${query.replace(/"/g, '&quot;')}" autocomplete="off" />
+          <button type="button" class="matz-kbd" id="rc-esc-btn" title="Limpar busca ou fechar (ESC)" style="cursor:pointer;">ESC</button>
         </div>
         <div class="matz-raycast-list">
           ${
@@ -70,11 +76,16 @@ export function renderEmbeddedRaycastPalette(
                   .map(
                     (item, idx) => `
               <div class="matz-raycast-item ${idx === activeIdx ? 'active' : ''}" data-rc-idx="${idx}">
-                <div style="display:flex;align-items:center;gap:10px;">
-                  <span style="color:${idx === activeIdx ? 'var(--accent)' : 'var(--text-muted)'};">${matzIcon(item.icon, 15)}</span>
-                  <span style="font-size:13px;font-weight:${idx === activeIdx ? '600' : '500'};">${item.label}</span>
+                <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+                  <span style="color:${idx === activeIdx ? 'var(--accent)' : 'var(--text-muted)'};flex-shrink:0;">${matzIcon(item.icon, 15)}</span>
+                  <span style="font-size:13px;font-weight:${idx === activeIdx ? '600' : '500'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.label}</span>
+                  ${
+                    item.category
+                      ? `<span class="matz-pill-xs" style="font-size:9.5px;height:17px;padding:0 5px;">${item.category}</span>`
+                      : ''
+                  }
                 </div>
-                <span class="matz-kbd">${item.shortcut}</span>
+                <span class="matz-kbd" style="flex-shrink:0;">${item.shortcut}</span>
               </div>
             `
                   )
@@ -83,7 +94,7 @@ export function renderEmbeddedRaycastPalette(
         </div>
         <div style="padding:8px 14px;border-top:1px solid var(--border);background:var(--surface-subtle);display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text-muted);">
           <span style="display:flex;align-items:center;gap:6px;">${matzIcon('command', 12)} Matz OmniCommand Engine · @matz/ui v4.0</span>
-          <span><kbd class="matz-kbd">↑↓</kbd> navegar · <kbd class="matz-kbd">↵</kbd> executar</span>
+          <span><kbd class="matz-kbd">↑↓</kbd> navegar · <kbd class="matz-kbd">↵</kbd> executar · <kbd class="matz-kbd">ESC</kbd> fechar</span>
         </div>
       </div>
     `;
@@ -100,8 +111,31 @@ export function renderEmbeddedRaycastPalette(
       }
     });
 
+    const handleEscape = () => {
+      if (onCloseModal) {
+        onCloseModal();
+        return;
+      }
+      if (query) {
+        query = '';
+        activeIdx = 0;
+        draw();
+        container.querySelector<HTMLInputElement>('#rc-inline-input')?.focus();
+      }
+    };
+
+    container.querySelector('#rc-esc-btn')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      handleEscape();
+    });
+
     input.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowDown') {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        handleEscape();
+      } else if (e.key === 'ArrowDown') {
         e.preventDefault();
         activeIdx = (activeIdx + 1) % Math.max(1, filtered.length);
         draw();
@@ -127,7 +161,9 @@ export function renderEmbeddedRaycastPalette(
           activeIdx = idx;
           if (chosen.onSelect) chosen.onSelect();
           else showMatzToast(`Comando executado: ${chosen.label}`);
-          draw();
+          if (!onCloseModal) {
+            draw();
+          }
         }
       });
     });
@@ -153,19 +189,33 @@ export function openRaycastCommandModal(
   holder.style.width = 'min(620px, 92vw)';
   backdrop.appendChild(holder);
 
+  const closeModal = () => {
+    window.removeEventListener('keydown', onWindowKeyDown, true);
+    backdrop.remove();
+  };
+
+  const onWindowKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
+      closeModal();
+    }
+  };
+  window.addEventListener('keydown', onWindowKeyDown, true);
+
   const wrapped = commands.map((c) => ({
     ...c,
     onSelect: () => {
-      backdrop.remove();
+      closeModal();
       if (c.onSelect) c.onSelect();
       else showMatzToast(`Comando executado: ${c.label}`);
     },
   }));
 
-  renderEmbeddedRaycastPalette(holder, wrapped);
+  renderEmbeddedRaycastPalette(holder, wrapped, closeModal);
 
   backdrop.addEventListener('click', (e) => {
-    if (e.target === backdrop) backdrop.remove();
+    if (e.target === backdrop) closeModal();
   });
 
   document.body.appendChild(backdrop);
@@ -771,7 +821,12 @@ export function renderMatzAccordion(
   draw();
 }
 
-export function openMatzDialog(title: string, description: string, bodyHtml: string): void {
+export function openMatzDialog(
+  title: string,
+  description: string,
+  bodyHtml: string,
+  onConfirm?: () => void | Promise<void>
+): void {
   const existing = document.getElementById('matz-dialog-overlay');
   if (existing) existing.remove();
 
@@ -798,15 +853,30 @@ export function openMatzDialog(title: string, description: string, bodyHtml: str
     </div>
   `;
 
-  const close = () => overlay.remove();
+  const close = () => {
+    window.removeEventListener('keydown', onEsc, true);
+    overlay.remove();
+  };
+  const onEsc = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
+      close();
+    }
+  };
+  window.addEventListener('keydown', onEsc, true);
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) close();
   });
   overlay.querySelector('#matz-dlg-close')?.addEventListener('click', close);
   overlay.querySelector('#matz-dlg-cancel')?.addEventListener('click', close);
-  overlay.querySelector('#matz-dlg-confirm')?.addEventListener('click', () => {
+  overlay.querySelector('#matz-dlg-confirm')?.addEventListener('click', async () => {
+    if (onConfirm) {
+      await onConfirm();
+    } else {
+      showMatzToast('Ação confirmada com sucesso!');
+    }
     close();
-    showMatzToast('Ação confirmada com sucesso!');
   });
 
   document.body.appendChild(overlay);
@@ -841,7 +911,18 @@ export function openMatzSheetDrawer(title: string, subtitle: string, bodyHtml: s
     </div>
   `;
 
-  const close = () => overlay.remove();
+  const close = () => {
+    window.removeEventListener('keydown', onEsc, true);
+    overlay.remove();
+  };
+  const onEsc = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
+      close();
+    }
+  };
+  window.addEventListener('keydown', onEsc, true);
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) close();
   });

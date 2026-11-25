@@ -1,3 +1,5 @@
+import { matzIcon } from "../icons/Icons";
+
 export interface MatzNoteSummary {
   id: string;
   title: string;
@@ -91,7 +93,7 @@ export class MatzEditorModule {
                       (d) => `
                   <div class="matz-switcher-item ${this.activeDoc?.id === d.id ? "active" : ""}" data-doc-id="${d.id}" style="flex-direction:column;align-items:flex-start;gap:4px;">
                     <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
-                      <span style="font-weight:600;font-size:12.5px;">${d.is_vault ? "🔒 " : ""}${d.title || "Sem título"}</span>
+                      <span style="font-weight:600;font-size:12.5px;display:inline-flex;align-items:center;gap:4px;">${d.is_vault ? matzIcon("lock", 11) : ""}${d.title || "Sem título"}</span>
                     </div>
                     <span style="font-size:11px;color:var(--text-muted);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;">
                       ${d.snippet || "Documento vazio"}
@@ -113,7 +115,7 @@ export class MatzEditorModule {
               <div style="display:flex;align-items:center;gap:8px;">
                 <label style="display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--text-secondary);cursor:pointer;">
                   <input type="checkbox" id="matz-note-vault" ${this.activeDoc.is_vault ? "checked" : ""} />
-                  🔒 Vault E2EE
+                  ${matzIcon("lock", 11)} Vault E2EE
                 </label>
                 <button class="matz-btn" id="matz-note-preview-btn">${this.previewMode ? "Editar" : "Preview MD"}</button>
                 <button class="matz-btn matz-btn-primary" id="matz-note-save-btn">Salvar (Ctrl+S)</button>
@@ -127,7 +129,7 @@ export class MatzEditorModule {
             }
             <footer style="height:28px;border-top:1px solid var(--border);background:var(--bg-secondary);padding:0 20px;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text-muted);">
               <span>${stats.words} palavras · ${stats.chars} caracteres · ~${stats.readMin} min de leitura</span>
-              <span>${this.activeDoc.is_vault ? "🔒 Criptografia Argon2id + AES-256-GCM ativa" : "Markdown Local-First"}</span>
+              <span style="display:inline-flex;align-items:center;gap:4px;">${this.activeDoc.is_vault ? `${matzIcon("lock", 11)} Criptografia Argon2id + AES-256-GCM ativa` : "Markdown Local-First"}</span>
             </footer>
           `
               : `

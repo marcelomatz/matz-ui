@@ -771,7 +771,7 @@ export function renderMatzWebsiteFooter(container: HTMLElement): void {
         <!-- Column 4: Ecossistema & IA -->
         <div style="display:flex;flex-direction:column;gap:8px;">
           <strong style="font-size:11.5px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-primary);">Integrações &amp; IA</strong>
-          <a href="/llms.txt" target="_blank" style="font-size:12.5px;color:var(--accent);text-decoration:none;font-weight:600;">Manifesto /llms.txt ↗</a>
+          <a href="/llms.txt" target="_blank" style="font-size:12.5px;color:var(--accent);text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:4px;">Manifesto /llms.txt ${matzIcon('external', 11)}</a>
           <a href="#wails" onclick="return false;" style="font-size:12.5px;color:var(--text-secondary);text-decoration:none;">Go 1.27 + Wails v3 Bridge</a>
           <a href="#react" onclick="return false;" style="font-size:12.5px;color:var(--text-secondary);text-decoration:none;">React 19, Vue 3 &amp; Svelte 5</a>
           <button type="button" class="matz-copy-pill" data-matz-copy-text="npm install @matz/ui@beta" style="width:fit-content;margin-top:2px;">
